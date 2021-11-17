@@ -1,0 +1,224 @@
+<%= @page_title = "Daftar Organization" %>
+<% content_for :head do %>
+    <title>A simple page</title>
+<% end %>
+
+  <% content_for :stylesheets do %>
+   
+  <% end %>
+ 
+  <% content_for :link_href do %>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.11.3/datatables.min.css"/>
+  <% end %>
+
+  <% content_for :content_html do %>
+   
+   <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-11">
+                            Daftar Customer
+                        </div>
+
+                        <div class="col-1">
+                            <div class="text-right">
+                                <%= link_to "Tambah", { controller: "organization", action: "new" }, id: "tambah", class: "btn btn-success" %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                
+                    <%#<table id="organization-datatable" data-source="">
+                    
+                         <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table> %>
+
+                     <table id="ajax-table" class="display table table-bordered">
+                    </table>
+
+                </div>
+            </div>
+        </div>
+   </div>
+
+  <% end %>
+
+
+    <% content_for :script do %>
+     <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.3/datatables.min.js"></script>
+     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script>
+        var table = null
+            $(document).ready(function() {
+                // $('#organization-datatable').dataTable({});
+
+                table = $('#ajax-table').DataTable({
+                    ajax: '/get_dataset',
+                    columns: [
+                         {
+                            "className":      'dt-control',
+                            "orderable":      false,
+                            "data":           null,
+                            "defaultContent": ''
+                        },
+                        {title: 'No', data: 'id', width: "5%"},
+                        {title: 'name', data: 'name'},
+                        {title: 'phone', data: 'phone',width: "15%"},
+                        {title: 'logo', data: 'logo',width: "15%"},
+                        {title: 'action', data: 'action',width: "15%"}
+                    ],
+                    "columnDefs": [
+                        {
+                            // The `data` parameter refers to the data for the cell (defined by the
+                            // `data` option, which defaults to the column being worked with, in
+                            // this case `data: 0`.
+                            "render": function ( data, type, row ) {
+                                
+                                return '<img src="'+ row.logo.url +'" width="100" height="100">';
+                            },
+                            "targets": 4
+                        },
+                        {
+                            // The `data` parameter refers to the data for the cell (defined by the
+                            // `data` option, which defaults to the column being worked with, in
+                            // this case `data: 0`.
+                            "render": function ( data, type, row ) {
+                                var html = '<a href="/organization/person/'+ row.id +'">Tambah Person</a>'
+                                html += '&nbsp;&nbsp;<a href="javascript:void(0)" onclick="hapusOrganization('+ row.id +')">Hapus</a>'
+                                return html;
+                            },
+                            "targets": 5
+                        }
+                        // { "visible": false,  "targets": [ 3 ] }
+                    ]
+                    });
+
+                    $('#ajax-table tbody').on('click', 'td.dt-control', function () {
+                        var tr = $(this).closest('tr');
+                        var row = table.row( tr );
+                
+                        if ( row.child.isShown() ) {
+                            // This row is already open - close it
+                            row.child.hide();
+                            tr.removeClass('shown');
+                        }
+                        else {
+                            // Open this row
+                            row.child( format(row.data()) ).show();
+                            tr.addClass('shown');
+                        }
+                    } );
+            });
+
+            function format ( d ) {
+                console.log(d.person)
+                
+                var html = `<table class="display table table-bordered table-hover"><thead><tr><td>Name</td><td>Email</td><td>Phone</td>
+                <td>Avatar</td>
+                <td>Aksi</td></tr></thead><tbody>`
+                d.person.forEach(function(element){
+                    html += `<tr>
+                        <td>${element.name}</td>
+                        <td>${element.email}</td>
+                        <td>${element.phone}</td>
+                        <td><img src="${element.avatar.url}" width="100" height="100"></td>
+                        <td>
+                            <button class="btn btn-danger" type="button" onclick="hapusPerson(${element.id})">Hapus</button>
+                        </td>
+                    </tr>`
+                })                 
+                html += '</tbody></table>'
+                return html
+            }
+
+            function hapusPerson(id)
+            {
+                Swal.fire({
+                    title: 'Apakah anda yakin?',
+                    icon : 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (login) => {
+                        return $.ajax({
+                            url : "/person/"+id,
+                            type : "POST",
+                            data: {
+                                "_method":"delete",
+                                "authenticity_token" : $('meta[name="csrf-token"]').attr("content")
+                            },
+                            dataType : "json",
+                            success : function(response) {
+                                return response
+                            }
+                        })
+                    },
+                    allowOutsideClick: () => !Swal.isLoading()
+                    }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: result.value.message,
+                            icon : "success"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload()
+                            }
+                        })
+                    }
+                    })   
+            }
+
+            function hapusOrganization(id)
+            {
+                Swal.fire({
+                    title: 'Apakah anda yakin?',
+                    icon : 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (login) => {
+                        return $.ajax({
+                            url : "/organization/"+id,
+                            type : "POST",
+                            data: {
+                                "_method":"delete",
+                                "authenticity_token" : $('meta[name="csrf-token"]').attr("content")
+                            },
+                            dataType : "json",
+                            success : function(response) {
+                                return response
+                            }
+                        })
+                    },
+                    allowOutsideClick: () => !Swal.isLoading()
+                    }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: result.value.message,
+                            icon : "success"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload()
+                            }
+                        })
+                    }
+                    })   
+            }
+        </script>
+     <% end %>
+  
+  <%= render template: "layouts/application" %>

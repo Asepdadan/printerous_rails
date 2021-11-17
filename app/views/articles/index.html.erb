@@ -1,0 +1,22 @@
+  <% content_for :stylesheets do %>
+    #top_menu {display: none}
+    #right_menu {float: right; background-color: yellow; color: black}
+  <% end %>
+  <% content_for :content_html do %>
+   
+    <ul>
+    <% @articles.each do |article| %>
+    <li>
+        <a href="/articles/<%= article.id %>"><%= article.title %>  || <%= article.body %></a>
+        <%= link_to 'Detail' , article_path(article.id) %>
+    </li>
+
+    <% end %>
+    </ul>
+
+
+  <% end %>
+
+  
+  
+  <%= render template: "layouts/application" %>

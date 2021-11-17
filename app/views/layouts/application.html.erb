@@ -1,0 +1,68 @@
+<html>
+<head>
+  <title><%= @page_title or "Page Title" %></title>
+  <style><%= yield :stylesheets %></style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.1/css/bootstrap.min.css">
+  <%= yield :link_href %>
+    <%= csrf_meta_tags %>
+</head>
+<body>
+ 
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Printerous</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <% if current_page?(:controller => 'auth', :action => 'login') %>
+      <% else %>
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex">
+      <% if user_signed_in? %>
+        <li class="nav-item dropdown">
+        
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <%= current_user ? current_user.name : '' %>
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li>
+              <%= link_to 'Logout',  user_logout_path(current_user), class: 'dropdown-item'  %>
+            </li>
+          </ul>
+        </li>
+      
+        
+        <li class="nav-item dropdown">
+        
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Master
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li>
+              <%= link_to 'Customer',  organization_index_path(), class: 'dropdown-item'  %>
+            </li>
+            <li>
+              <%= link_to 'User',  user_index_path(), class: 'dropdown-item'  %>
+            </li>
+          </ul>
+        </li>
+        
+
+        <% end %>
+      </ul>
+    <% end %>
+    </div>
+  </div>
+</nav>
+  
+  <div class="container-fluid">
+  	<div class="mt-100" style="margin-top:20px;" id="content"><%= content_for?(:content_html) ? yield(:content_html) : yield %></div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+  <%= yield :script %>
+</body>
+</html>
