@@ -1,0 +1,113 @@
+<%= @page_title = "Daftar User" %>
+
+  <% content_for :stylesheets do %>
+   
+  <% end %>
+ 
+  <% content_for :link_href do %>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.11.3/datatables.min.css"/>
+  <% end %>
+
+  <% content_for :content_html do %>
+   
+   <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-11">
+                            Daftar User
+                        </div>
+
+                        <div class="col-1">
+                            <div class="text-right">
+                                <%= link_to "Tambah", { controller: "user", action: "new" }, id: "tambah", class: "btn btn-success" %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                     <table id="ajax-table" class="display table table-bordered">
+                    </table>
+
+                </div>
+            </div>
+        </div>
+   </div>
+
+  <% end %>
+
+
+    <% content_for :script do %>
+     <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.3/datatables.min.js"></script>
+     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script>
+        var table = null
+            $(document).ready(function() {
+                // $('#organization-datatable').dataTable({});
+
+                table = $('#ajax-table').DataTable({
+                    ajax: '/get_user',
+                    columns: [
+                        {title: 'No', data: 'id', width: "5%"},
+                        {title: 'name', data: 'name'},
+                        {title: 'email', data: 'email'},
+                        {title: 'action', data: 'action',width: "15%"}
+                    ],
+                    "columnDefs": [
+                         {
+                            "render": function ( data, type, row ) {
+                                return `
+                                    <a href="user/${row.id}/edit">Edit</a>
+                                    <a href="javascript:void(0)" onclick="hapusUser(${row.id})">Hapus</a>
+                                `
+                            },
+                            "targets": 3
+                        },
+                    ]
+                    });
+            });
+
+            function hapusUser(id)
+            {
+                Swal.fire({
+                    title: 'Apakah anda yakin?',
+                    icon : 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (login) => {
+                        return $.ajax({
+                            url : "/person/"+id,
+                            type : "POST",
+                            data: {
+                                "_method":"delete",
+                                "authenticity_token" : $('meta[name="csrf-token"]').attr("content")
+                            },
+                            dataType : "json",
+                            success : function(response) {
+                                return response
+                            }
+                        })
+                    },
+                    allowOutsideClick: () => !Swal.isLoading()
+                    }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: result.value.message,
+                            icon : "success"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload()
+                            }
+                        })
+                    }
+                    })   
+            }
+        </script>
+     <% end %>
+  
+  <%= render template: "layouts/application" %>
